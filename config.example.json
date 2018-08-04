@@ -1,0 +1,10 @@
+{
+	  "token": "your token goes here",
+	  "prefix": "r~",
+	  "bans": [
+		    "place banned user ids here"
+	  ],
+	  "owners": [
+		    "place owner user ids here"
+	  ]
+}
