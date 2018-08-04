@@ -68,7 +68,12 @@ func registerModCommands() {
 			userToBan, err = s.User(args[0])
 			if err != nil {
 
-				log.Errorf("unable to send message. error: %v", err)
+				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", strings.Join(args[0:], " ")))
+				if err != nil {
+
+					log.Errorf("unable to send message. error: %v", err)
+
+				}
 				return
 
 			}
@@ -268,7 +273,12 @@ func registerModCommands() {
 			targetUser, err = s.User(args[0])
 			if err != nil {
 
-				log.Errorf("unable to send message. error: %v", err)
+				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", strings.Join(args[0:], " ")))
+				if err != nil {
+
+					log.Errorf("unable to send message. error: %v", err)
+
+				}
 				return
 
 			}
