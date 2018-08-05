@@ -171,44 +171,6 @@ func registerUtilityCommands() {
 
 		}
 
-		hooks, err := channelWebhooksByName(s, reflectChannel.ID, "UserGhost")
-		if err != nil {
-
-			log.Printf("unable to get megachat webhooks. error: %v", err)
-			return
-
-		}
-
-		if len(hooks) == 4 {
-
-			ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, fmt.Sprintf("Setup is now finished. Try talking in <#%s> and see what happens!", reflectChannel.ID))
-			if err != nil {
-
-				log.Errorf("unable to edit a message. error: %v", err)
-
-			}
-			return
-
-		}
-
-		for x := len(hooks); x < 4; x++ {
-
-			_, err = s.WebhookCreate(reflectChannel.ID, "UserGhost", "")
-			if err != nil {
-
-				ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, "Unable to set up Reflect in your server... Please check if I have a role that can create webhooks...")
-				if err != nil {
-
-					log.Errorf("unable to edit a message. error: %v", err)
-
-				}
-
-				return
-
-			}
-
-		}
-
 		ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, fmt.Sprintf("Setup is now finished. Try talking in <#%s> and see what happens!", reflectChannel.ID))
 		if err != nil {
 

@@ -15,6 +15,7 @@ package main
 import (
 	// internals
 	"time"
+	"fmt"
 	// externals
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -28,9 +29,16 @@ var (
 // set up some harmony event handlers
 func registerEvtHandlers() {
 
+	// on message handler
 	handler.OnMessageHandler = func(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		if m.Type != discordgo.MessageTypeDefault {
+
+			return
+
+		}
+
+		if m.Author.ID == reflectUser.ID {
 
 			return
 
@@ -45,20 +53,6 @@ func registerEvtHandlers() {
 		}
 
 		if msgChannel.Name != "megachat" {
-
-			return
-
-		}
-
-		isHook, err := isWebhook(s, msgChannel.GuildID, m.Author)
-		if err != nil {
-
-			log.Errorf("unable to check if the message sender was a webhook. error: %v", err)
-			return
-
-		}
-
-		if isHook == true {
 
 			return
 
@@ -112,60 +106,29 @@ func registerEvtHandlers() {
 
 		}
 
-		var webhookParams *discordgo.WebhookParams
-		if len(m.Attachments) > 0 {
+		content := m.ContentWithMentionsReplaced()
+		content = string(everyoneRegex.ReplaceAll([]byte(content), []byte("everyone")))
+		content = string(hereRegex.ReplaceAll([]byte(content), []byte("here")))
 
-			if m.Content == "" {
+		var messageData *discordgo.MessageSend
+		if len(m.Embeds) > 0 {
 
-				webhookParams = &discordgo.WebhookParams{
-					Username:  username,
-					AvatarURL: m.Author.AvatarURL(""),
-					TTS:       false,
-					File:      m.Attachments[0].URL,
-					Embeds:    m.Embeds,
-				}
-
-			} else {
-
-				webhookParams = &discordgo.WebhookParams{
-					Content:   m.ContentWithMentionsReplaced(),
-					Username:  username,
-					AvatarURL: m.Author.AvatarURL(""),
-					TTS:       false,
-					File:      m.Attachments[0].URL,
-					Embeds:    m.Embeds,
-				}
-
+			messageData = &discordgo.MessageSend{
+				Content:   fmt.Sprintf("**%s:** %s", username, content),
+				Embed:    m.Embeds[0],
 			}
 
 		} else {
 
-			if m.Content == "" {
-
-				webhookParams = &discordgo.WebhookParams{
-					Username:  username,
-					AvatarURL: m.Author.AvatarURL(""),
-					TTS:       false,
-					Embeds:    m.Embeds,
-				}
-
-			} else {
-
-				webhookParams = &discordgo.WebhookParams{
-					Content:   m.ContentWithMentionsReplaced(),
-					Username:  username,
-					AvatarURL: m.Author.AvatarURL(""),
-					TTS:       false,
-					Embeds:    m.Embeds,
-				}
-
+			messageData = &discordgo.MessageSend{
+				Content:   fmt.Sprintf("**%s:** %s", username, content),
 			}
 
 		}
 
 		for _, guild := range userGuilds {
 
-			go backgroundWebhookExec(s, guild, msgChannel, webhookParams)
+			go backgroundMessageSend(s, guild, msgChannel, messageData)
 
 		}
 

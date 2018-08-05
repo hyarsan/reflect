@@ -17,7 +17,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"time"
 	// externals
 	"github.com/bwmarrin/discordgo"
@@ -99,7 +98,7 @@ func backgroundStatusUpdater(s *discordgo.Session) {
 }
 
 // executes the webhooks
-func backgroundWebhookExec(s *discordgo.Session, g *discordgo.UserGuild, mc *discordgo.Channel, hookParams *discordgo.WebhookParams) {
+func backgroundMessageSend(s *discordgo.Session, g *discordgo.UserGuild, mc *discordgo.Channel, messageData *discordgo.MessageSend) {
 
 	channels, err := guildChannelByName(s, g.ID, "megachat")
 	if err != nil {
@@ -121,32 +120,13 @@ func backgroundWebhookExec(s *discordgo.Session, g *discordgo.UserGuild, mc *dis
 
 	}
 
-	hooks, err := channelWebhooksByName(s, channels[0].ID, "UserGhost")
+	_, err = s.ChannelMessageSendComplex(channels[0].ID, messageData)
 	if err != nil {
 
-		log.Printf("unable to get megachat webhooks. error: %v", err)
+		log.Errorf("unable to send message. error: %v\n", err)
 		return
 
 	}
-
-	if len(hooks) == 0 {
-
-		return
-
-	}
-
-	rand.Seed(time.Now().Unix())
-	hook := hooks[rand.Int()%len(hooks)]
-
-	err = s.WebhookExecute(hook.ID, hook.Token, false, hookParams)
-	if err != nil {
-
-		log.Printf("unable to execute webhook. error: %v", err)
-		return
-
-	}
-
-	return
 
 }
 

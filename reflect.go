@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"regexp"
 	"syscall"
 	// externals
 	"github.com/bwmarrin/discordgo"
@@ -31,6 +32,8 @@ import (
 var (
 	config  configuration
 	handler *harmony.CommandHandler
+	everyoneRegex *regexp.Regexp
+	hereRegex *regexp.Regexp
 )
 
 func init() {
@@ -76,7 +79,21 @@ func main() {
 	dg, err := discordgo.New(fmt.Sprintf("Bot %s", config.Token))
 	if err != nil {
 
-		log.Fatalf("[err]: unable to make a new discordgo session object. error: %v", err)
+		log.Fatalf("unable to make a new discordgo session object. error: %v", err)
+
+	}
+
+	everyoneRegex, err = regexp.Compile("@everyone")
+	if err != nil {
+
+		log.Fatalf("unable to compile regex. error: %v", err)
+
+	}
+
+	hereRegex, err = regexp.Compile("@here")
+	if err != nil {
+
+		log.Fatalf("unable to compile regex. error: %v", err)
 
 	}
 
