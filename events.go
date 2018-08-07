@@ -14,8 +14,8 @@ package main
 
 import (
 	// internals
-	"time"
 	"fmt"
+	"time"
 	// externals
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -88,6 +88,12 @@ func registerEvtHandlers() {
 
 		}
 
+		username = string(escapeRegex.ReplaceAllFunc([]byte(username), func(in []byte) []byte {
+
+			return append([]byte("\\"), in...)
+
+		}))
+
 		foundMatch := false
 		for _, user := range userCache[username] {
 
@@ -107,21 +113,24 @@ func registerEvtHandlers() {
 		}
 
 		content := m.ContentWithMentionsReplaced()
-		content = string(everyoneRegex.ReplaceAll([]byte(content), []byte("everyone")))
-		content = string(hereRegex.ReplaceAll([]byte(content), []byte("here")))
+		content = string(mentionRegex.ReplaceAllFunc([]byte(content), func(in []byte) []byte {
+
+			return in[1:]
+
+		}))
 
 		var messageData *discordgo.MessageSend
 		if len(m.Embeds) > 0 {
 
 			messageData = &discordgo.MessageSend{
-				Content:   fmt.Sprintf("**%s:** %s", username, content),
-				Embed:    m.Embeds[0],
+				Content: fmt.Sprintf("**%s:** %s", username, content),
+				Embed:   m.Embeds[0],
 			}
 
 		} else {
 
 			messageData = &discordgo.MessageSend{
-				Content:   fmt.Sprintf("**%s:** %s", username, content),
+				Content: fmt.Sprintf("**%s:** %s", username, content),
 			}
 
 		}

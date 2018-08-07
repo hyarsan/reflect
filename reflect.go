@@ -20,8 +20,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"runtime"
 	"regexp"
+	"runtime"
 	"syscall"
 	// externals
 	"github.com/bwmarrin/discordgo"
@@ -30,10 +30,10 @@ import (
 )
 
 var (
-	config  configuration
-	handler *harmony.CommandHandler
-	everyoneRegex *regexp.Regexp
-	hereRegex *regexp.Regexp
+	config       configuration
+	handler      *harmony.CommandHandler
+	mentionRegex *regexp.Regexp
+	escapeRegex  *regexp.Regexp
 )
 
 func init() {
@@ -83,19 +83,9 @@ func main() {
 
 	}
 
-	everyoneRegex, err = regexp.Compile("@everyone")
-	if err != nil {
+	mentionRegex = regexp.MustCompile("\\@everyone|\\@here")
 
-		log.Fatalf("unable to compile regex. error: %v", err)
-
-	}
-
-	hereRegex, err = regexp.Compile("@here")
-	if err != nil {
-
-		log.Fatalf("unable to compile regex. error: %v", err)
-
-	}
+	escapeRegex = regexp.MustCompile("\\`|\\*|\\_|\\\\")
 
 	handler = harmony.New("r~", true)
 
