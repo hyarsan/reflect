@@ -88,12 +88,6 @@ func registerEvtHandlers() {
 
 		}
 
-		username = string(escapeRegex.ReplaceAllFunc([]byte(username), func(in []byte) []byte {
-
-			return append([]byte("\\"), in...)
-
-		}))
-
 		foundMatch := false
 		for _, user := range userCache[username] {
 
@@ -109,28 +103,50 @@ func registerEvtHandlers() {
 		if !foundMatch {
 
 			userCache[username] = append(userCache[username], m.Author)
+	
 
 		}
+
+		username = string(escapeRegex.ReplaceAllFunc([]byte(username), func(in []byte) []byte {
+
+			return append([]byte("\\"), in...)
+
+		}))
+		username = string(mentionRegex.ReplaceAllFunc([]byte(username), func(in []byte) []byte {
+
+			return append([]byte("<at>"), in[1:]...)
+
+		}))
 
 		content := m.ContentWithMentionsReplaced()
 		content = string(mentionRegex.ReplaceAllFunc([]byte(content), func(in []byte) []byte {
 
-			return in[1:]
+			return append([]byte("<at>"), in[1:]...)
 
 		}))
+
+		if !inList(m.Author.ID, config.Owners) {
+
+			content = fmt.Sprintf("**%s**: %s", username, content)
+
+		} else {
+
+			content = fmt.Sprintf("**%s** **__(admin)__**: %s", username, content)
+
+		}
 
 		var messageData *discordgo.MessageSend
 		if len(m.Embeds) > 0 {
 
 			messageData = &discordgo.MessageSend{
-				Content: fmt.Sprintf("**%s:** %s", username, content),
+				Content: content,
 				Embed:   m.Embeds[0],
 			}
 
 		} else {
 
 			messageData = &discordgo.MessageSend{
-				Content: fmt.Sprintf("**%s:** %s", username, content),
+				Content: content,
 			}
 
 		}

@@ -40,6 +40,19 @@ func registerModCommands() {
 
 		}
 
+		escapedUserMentionThing := strings.Join(strings.Split(m.ContentWithMentionsReplaced(), " ")[1:], " ")
+		escapedUserMentionThing = string(mentionRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("<at>"), in[1:]...)
+
+		}))
+		
+		escapedUserMentionThing = string(escapeRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("\\"), in...)
+
+		}))
+
 		var userToBan *discordgo.User
 		if len(m.Mentions) > 0 {
 
@@ -68,7 +81,7 @@ func registerModCommands() {
 			userToBan, err = s.User(args[0])
 			if err != nil {
 
-				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", strings.Join(args[0:], " ")))
+				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", escapedUserMentionThing))
 				if err != nil {
 
 					log.Errorf("unable to send message. error: %v", err)
@@ -117,6 +130,19 @@ func registerModCommands() {
 			return
 
 		}
+		
+		escapedUserMentionThing := strings.Join(strings.Split(m.ContentWithMentionsReplaced(), " ")[1:], " ")
+		escapedUserMentionThing = string(mentionRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("<at>"), in[1:]...)
+
+		}))
+		
+		escapedUserMentionThing = string(escapeRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("\\"), in...)
+
+		}))
 
 		var userToUnban *discordgo.User
 		if len(m.Mentions) > 0 {
@@ -128,7 +154,7 @@ func registerModCommands() {
 			userToUnban, err = s.User(args[0])
 			if err != nil {
 
-				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID", args[0]))
+				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID", escapedUserMentionThing))
 				if err != nil {
 
 					log.Errorf("unable to send message. error: %v", err)
@@ -241,6 +267,19 @@ func registerModCommands() {
 
 	handler.AddCommand("user", false, func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 
+		escapedUserMentionThing := strings.Join(strings.Split(m.ContentWithMentionsReplaced(), " ")[1:], " ")
+		escapedUserMentionThing = string(mentionRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("<at>"), in[1:]...)
+
+		}))
+		
+		escapedUserMentionThing = string(escapeRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
+
+			return append([]byte("\\"), in...)
+
+		}))
+
 		var targetUser *discordgo.User
 		if len(args) == 0 {
 
@@ -273,7 +312,7 @@ func registerModCommands() {
 			targetUser, err = s.User(args[0])
 			if err != nil {
 
-				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", strings.Join(args[0:], " ")))
+				_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s isn't a valid user ID, nick, or mention", escapedUserMentionThing))
 				if err != nil {
 
 					log.Errorf("unable to send message. error: %v", err)
@@ -298,11 +337,23 @@ func registerModCommands() {
 		}
 
 		embed := discordgo.MessageEmbed{
-			Title:       "Indexing servers",
-			Description: "This may take a while...",
+			Title:       targetUser.String(),
+			Description: fmt.Sprintf("Showing user information for %s", targetUser.Username),
 			Color:       0x89da72,
 			Thumbnail: &discordgo.MessageEmbedThumbnail{
-				URL: "https://u.catgirl.host/4seqjs.png",
+				URL: targetUser.AvatarURL(""),
+			},
+			Fields: []*discordgo.MessageEmbedField{
+				&discordgo.MessageEmbedField{
+					Name: "Discord Information",
+					Value: fmt.Sprintf(`**Username:** %s
+**ID:** %s
+**Bot:** %t`, targetUser.Username, targetUser.ID, targetUser.Bot),
+				},
+				&discordgo.MessageEmbedField{
+					Name:  "Reflect Servers",
+					Value: "Loading shared server list...",
+				},
 			},
 			Footer: &discordgo.MessageEmbedFooter{
 				Text: "Built with ❤ by superwhiskers#3210 & hyarsan#3653",
