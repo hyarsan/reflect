@@ -54,7 +54,7 @@ func registerUtilityCommands() {
 				},
 				&discordgo.MessageEmbedField{
 					Name:  "Invite",
-					Value: "[Link](https://discordapp.com/api/oauth2/authorize?client_id=469599833351651328&permissions=8&scope=bot)",
+					Value: "[Link](https://discordapp.com/oauth2/authorize?client_id=486335422436343810&scope=bot&permissions=8)",
 				},
 			},
 		}
