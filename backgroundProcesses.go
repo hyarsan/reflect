@@ -78,12 +78,11 @@ func backgroundStatusUpdater(s *discordgo.Session) {
 		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
 			IdleSince: &idleTime,
 			Game: &discordgo.Game{
-				Name: fmt.Sprintf("#megachat on %d servers!", len(userGuilds)),
+				Name: fmt.Sprintf("#%s on %d servers!", config.ChannelName, len(userGuilds)),
 				Type: 2,
-				URL:  "https://discordapp.com/api/oauth2/authorize?client_id=469599833351651328&permissions=8&scope=bot",
 			},
 			AFK:    true,
-			Status: fmt.Sprintf("#megachat on %d servers!", len(userGuilds)),
+			Status: fmt.Sprintf("#%s on %d servers!", config.ChannelName, len(userGuilds)),
 		})
 		if err != nil {
 
@@ -97,13 +96,13 @@ func backgroundStatusUpdater(s *discordgo.Session) {
 
 }
 
-// executes the webhooks
+// mirrors the messages
 func backgroundMessageSend(s *discordgo.Session, g *discordgo.UserGuild, mc *discordgo.Channel, messageData *discordgo.MessageSend) {
 
-	channels, err := guildChannelByName(s, g.ID, "megachat")
+	channels, err := guildChannelByName(s, g.ID, config.ChannelName)
 	if err != nil {
 
-		log.Printf("unable to grab megachat channel. error: %v", err)
+		log.Printf("unable to grab reflect channel. error: %v", err)
 		return
 
 	}
