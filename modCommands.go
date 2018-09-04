@@ -326,7 +326,7 @@ func registerModCommands() {
 
 		if targetUser.ID == reflectUser.ID {
 
-			_, err := s.ChannelMessageSend(m.ChannelID, "What a hack. Just use r~info next time.")
+			_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("What a hack. Just use %sinfo next time.", config.Prefix))
 			if err != nil {
 
 				log.Errorf("unable to send message. error: %v", err)
