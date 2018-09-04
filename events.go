@@ -52,7 +52,7 @@ func registerEvtHandlers() {
 
 		}
 
-		if msgChannel.Name != "megachat" {
+		if msgChannel.Name != config.ChannelName {
 
 			return
 

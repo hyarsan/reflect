@@ -14,8 +14,9 @@ package main
 
 // structure for the config
 type configuration struct {
-	Token  string   `json:"token"`
-	Prefix string   `json:"prefix"`
-	Bans   []string `json:"bans"`
-	Owners []string `json:"owners"`
+	Token       string   `json:"token"`
+	Prefix      string   `json:"prefix"`
+	ChannelName string   `json:"channel_name"`
+	Bans        []string `json:"bans"`
+	Owners      []string `json:"owners"`
 }

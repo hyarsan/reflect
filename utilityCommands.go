@@ -39,22 +39,22 @@ func registerUtilityCommands() {
 			Fields: []*discordgo.MessageEmbedField{
 				&discordgo.MessageEmbedField{
 					Name:  "How do I use it?",
-					Value: fmt.Sprintf("Type %ssetup to set it up.\nIt creates a channel named #megachat where you can talk to other guilds.", config.Prefix),
+					Value: fmt.Sprintf("Type %ssetup to set it up.\nIt creates a channel named #%s where you can talk to other guilds.", config.Prefix, config.ChannelName),
 				},
 				&discordgo.MessageEmbedField{
 					Name: "Commands",
 					Value: `**help**: Shows this message.
 **setup**: Sets up the bot environment in your server.
 **unsetup**: Removes the bot environment from the server.
-**ban** **<nick|id|mention>**: Bans a user from using the megachat.
-**unban** **<nick|id|mention>**: Unbans a user from the megachat.
+**ban** **<nick|id|mention>**: Bans a user from Reflect.
+**unban** **<nick|id|mention>**: Unbans a user from Reflect.
 **bans**: Shows the banlist.
 **info**: Shows some stats about the bot.
 **user** **<nick|id|mention>**: Shows info about a user`,
 				},
 				&discordgo.MessageEmbedField{
 					Name:  "Invite",
-					Value: "[Link](https://discordapp.com/oauth2/authorize?client_id=486335422436343810&scope=bot&permissions=8)",
+					Value: fmt.Sprintf("[Link](https://discordapp.com/oauth2/authorize?client_id=%s&scope=bot&permissions=8)", reflectUser.ID),
 				},
 			},
 		}
@@ -122,7 +122,7 @@ func registerUtilityCommands() {
 
 		}
 
-		channelList, err := guildChannelByName(s, channel.GuildID, "megachat")
+		channelList, err := guildChannelByName(s, channel.GuildID, config.ChannelName)
 		if err != nil {
 
 			log.Errorf("unable to check for the channel in a guild. error: %v", err)
@@ -134,12 +134,12 @@ func registerUtilityCommands() {
 
 		if len(channelList) > 0 {
 
-			ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, fmt.Sprintf("Detected existing megachat channel at <#%s>. Using that channel instead...", channelList[0].ID))
+			ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, fmt.Sprintf("Detected existing mirror channel at <#%s>. Using that channel instead...", channelList[0].ID))
 			reflectChannel = channelList[0]
 
 		} else {
 
-			reflectChannel, err = s.GuildChannelCreate(channel.GuildID, "megachat", "text")
+			reflectChannel, err = s.GuildChannelCreate(channel.GuildID, config.ChannelName, "text")
 			if err != nil {
 
 				ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, "Unable to set up Reflect in your server... Please check if I have a role that can create channels...")

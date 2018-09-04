@@ -1,6 +1,7 @@
 {
 	  "token": "your token goes here",
 	  "prefix": "r~",
+      "channel_name": "megachat",
 	  "bans": [
 		    "place banned user ids here"
 	  ],
