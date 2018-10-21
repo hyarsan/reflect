@@ -16,6 +16,7 @@ import (
 	// internals
 	"fmt"
 	"strings"
+	"strconv"
 	// externals
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -46,7 +47,7 @@ func registerModCommands() {
 			return append([]byte("<at>"), in[1:]...)
 
 		}))
-		
+
 		escapedUserMentionThing = string(escapeRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
 
 			return append([]byte("\\"), in...)
@@ -96,6 +97,18 @@ func registerModCommands() {
 		if inList(userToBan.ID, config.Owners) {
 
 			_, err = s.ChannelMessageSend(m.ChannelID, "You can't ban an owner!")
+			if err != nil {
+
+				log.Errorf("unable to send message. error: %v", err)
+
+			}
+			return
+
+		}
+
+		if inList(userToBan.ID, config.Bans) {
+
+			_, err = s.ChannelMessageSend(m.ChannelID, "That user is already banned!")
 			if err != nil {
 
 				log.Errorf("unable to send message. error: %v", err)
@@ -219,21 +232,10 @@ func registerModCommands() {
 		} else {
 
 			banlistFields = []*discordgo.MessageEmbedField{}
-			for _, banID := range config.Bans {
-
-				user, err := s.User(banID)
-				if err != nil {
-
-					banlistFields = append(banlistFields, &discordgo.MessageEmbedField{
-						Name:   "Unknown",
-						Value:  banID,
-						Inline: true,
-					})
-
-				}
+			for i, banID := range config.Bans {
 
 				banlistFields = append(banlistFields, &discordgo.MessageEmbedField{
-					Name:   user.Username,
+					Name:   strconv.Itoa(i+1),
 					Value:  banID,
 					Inline: true,
 				})
@@ -297,10 +299,34 @@ func registerModCommands() {
 
 			} else {
 
-				_, err = s.ChannelMessageSend(m.ChannelID, "Multiple users in usercache not supported yet.")
+				embedFields := []*discordgo.MessageEmbedField{}
+				for _, user := range userSet {
+
+					embedFields = append(embedFields, &discordgo.MessageEmbedField{
+						Name: user.Username,
+						Value: user.ID,
+					})
+
+				}
+
+				embed := discordgo.MessageEmbed{
+					Title:      "Usercache Lookup Results",
+					Description: fmt.Sprintf("Showing every known user with the name %s", strings.Join(args[0:], " ")),
+					Color:       0x89da72,
+					Thumbnail: &discordgo.MessageEmbedThumbnail{
+						URL: "https://u.catgirl.host/4seqjs.png",
+					},
+					Fields: embedFields,
+					Footer: &discordgo.MessageEmbedFooter{
+						Text: "Built with ❤ by superwhiskers#3210 & hyarsan#3653",
+					},
+				}
+
+				_, err := s.ChannelMessageSendEmbed(m.ChannelID, &embed)
 				if err != nil {
 
-					log.Errorf("unable to send message. error: %v", err)
+					log.Errorf("unable to send usercache lookup results. error: %v", err)
+					return
 
 				}
 				return
