@@ -103,7 +103,6 @@ func registerEvtHandlers() {
 		if !foundMatch {
 
 			userCache[username] = append(userCache[username], m.Author)
-	
 
 		}
 
@@ -132,6 +131,12 @@ func registerEvtHandlers() {
 		} else {
 
 			content = fmt.Sprintf("**%s** **__(admin)__**: %s", username, content)
+
+		}
+
+		if len(content) > 2000 {
+
+			return
 
 		}
 

@@ -303,7 +303,7 @@ func registerModCommands() {
 				for _, user := range userSet {
 
 					embedFields = append(embedFields, &discordgo.MessageEmbedField{
-						Name: user.Username,
+						Name: user.String(),
 						Value: user.ID,
 					})
 
