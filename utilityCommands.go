@@ -1,20 +1,12 @@
 /*
 
-    reflect - link discord servers together like never before
-    Copyright (C) 2018  superwhiskers <whiskerdev@protonmail.com>
+utilityCommands.go -
+the utility command code for reflect
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+credits:
+  - @hyarsan#3653 - original bot creator
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+license: gnu agplv3
 
 */
 
@@ -24,6 +16,8 @@ import (
 	// internals
 	"fmt"
 	"strings"
+	"math"
+	"time"
 	// externals
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -58,7 +52,8 @@ func registerUtilityCommands() {
 **unban** **<nick|id|mention>**: Unbans a user from Reflect.
 **bans**: Shows the banlist.
 **info**: Shows some stats about the bot.
-**user** **<nick|id|mention>**: Shows info about a user`,
+**user** **<nick|id|mention>**: Shows information about a user.
+**notify** **<message>**: Sends out a message using the notification system.`,
 				},
 				&discordgo.MessageEmbedField{
 					Name:  "Invite",
@@ -99,6 +94,12 @@ func registerUtilityCommands() {
 					Name:  "Server List Excerpt",
 					Value: strings.Join(shuffleStringSlice(guildNames[:10]), "\n"),
 				},
+				&discordgo.MessageEmbedField{
+					Name: "System Info",
+					Value: fmt.Sprintf(`**Uptime**: %dh
+**Operating System**: %s %s %s
+**User**: %s@%s`, int(math.Floor(time.Since(startTime).Hours())), strings.Title(hostInfo.PlatformFamily), strings.Title(hostInfo.OS), strings.Title(hostInfo.PlatformVersion), currentUser.Username, hostInfo.Hostname),
+				},
 			},
 		}
 
@@ -110,6 +111,69 @@ func registerUtilityCommands() {
 
 		}
 
+	})
+	
+	handler.AddCommand("notify", false, func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	
+		if !inList(m.Author.ID, config.Owners) {
+
+			_, err = s.ChannelMessageSend(m.ChannelID, "You aren't an owner!")
+			if err != nil {
+
+				log.Errorf("unable to send message. error: %v", err)
+
+			}
+			return
+
+		}
+		
+		if len(args) < 1 {
+		
+			_, err := s.ChannelMessageSend(m.ChannelID, "You didn't provide a message!")
+			if err != nil {
+			
+				log.Errorf("unable to send message. error: %v", err)
+				
+			}
+			return
+			
+		}
+		
+		for _, userGuild := range userGuilds {
+		
+			guild, err := s.Guild(userGuild.ID)
+			if err != nil {
+			
+				log.Errorf("unable to retrieve guild. error: %v", err)
+				
+			}
+			
+			for _, channel := range guild.Channels {
+			
+				if channel.Name == "megachat" {
+				
+					_, err := s.ChannelMessageSend(channel.ID, fmt.Sprintf("<@%s> %s", guild.OwnerID, strings.Join(args, " ")))
+					if err != nil {
+					
+						log.Errorf("unable to send message. error: %v", err)
+						continue
+						
+					}
+					break
+					
+				}
+				
+			}
+			
+		}
+		
+		_, err := s.ChannelMessageSend(m.ChannelID, "Successfully sent your notification!")
+		if err != nil {
+		
+			log.Errorf("unable to send message. error: %v", err)
+			
+		}
+		
 	})
 
 	handler.AddCommand("setup", false, func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
@@ -147,7 +211,7 @@ func registerUtilityCommands() {
 
 		} else {
 
-			reflectChannel, err = s.GuildChannelCreate(channel.GuildID, config.ChannelName, "text")
+			reflectChannel, err = s.GuildChannelCreate(channel.GuildID, config.ChannelName, discordgo.ChannelTypeGuildText)
 			if err != nil {
 
 				ogMessage, err = s.ChannelMessageEdit(ogMessage.ChannelID, ogMessage.ID, "Unable to set up Reflect in your server... Please check if I have a role that can create channels...")

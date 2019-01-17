@@ -1,20 +1,12 @@
 /*
 
-    reflect - link discord servers together like never before
-    Copyright (C) 2018  superwhiskers <whiskerdev@protonmail.com>
+reflect.go -
+an implementation of the reflect bot in golang
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+credits:
+  - @hyarsan#3653 - original bot creator
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+license: gnu agplv3
 
 */
 
@@ -28,13 +20,17 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"os/user"
 	"regexp"
 	"runtime"
 	"syscall"
+	"time"
 	// externals
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
+	//"github.com/patrickmn/go-cache"
 	"github.com/superwhiskers/harmony"
+	"github.com/superwhiskers/gopsutil/host"
 )
 
 var (
@@ -42,6 +38,10 @@ var (
 	handler      *harmony.CommandHandler
 	mentionRegex *regexp.Regexp
 	escapeRegex  *regexp.Regexp
+	hostInfo     *host.InfoStat
+	startTime    time.Time
+	currentUser  *user.User
+	//db *cache.Cache
 )
 
 func init() {
@@ -57,6 +57,8 @@ func init() {
 func main() {
 
 	runtime.GOMAXPROCS(1000)
+
+	startTime = time.Now()
 
 	file, err := os.OpenFile("reflect.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -81,6 +83,20 @@ func main() {
 	if err != nil {
 
 		log.Fatalf("unable to parse config file as json. error: %v", err)
+
+	}
+
+	hostInfo, err = host.Info()
+	if err != nil {
+
+		log.Fatalf("unable to get the host os information. error: %v", err)
+
+	}
+
+	currentUser, err = user.Current()
+	if err != nil {
+
+		log.Fatalf("unable to get running user. error: %v", err)
 
 	}
 
