@@ -41,6 +41,18 @@ func registerModCommands() {
 
 		}
 
+		if len(args) < 1 {
+
+			_, err = s.ChannelMessageSend(m.ChannelID, "No arguments were provided!")
+			if err != nil {
+
+				log.Errorf("unable to send message. error: %v", err)
+
+			}
+			return
+
+		}
+
 		escapedUserMentionThing := strings.Join(strings.Split(m.ContentWithMentionsReplaced(), " ")[1:], " ")
 		escapedUserMentionThing = string(mentionRegex.ReplaceAllFunc([]byte(escapedUserMentionThing), func(in []byte) []byte {
 

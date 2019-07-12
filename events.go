@@ -32,13 +32,7 @@ func registerEvtHandlers() {
 	// on message handler
 	handler.OnMessageHandler = func(s *discordgo.Session, m *discordgo.MessageCreate) {
 
-		if m.Type != discordgo.MessageTypeDefault {
-
-			return
-
-		}
-
-		if m.Author.ID == reflectUser.ID {
+		if m.Type != discordgo.MessageTypeDefault || m.Author.ID == reflectUser.ID || m.Author.Bot  {
 
 			return
 

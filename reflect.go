@@ -111,7 +111,7 @@ func main() {
 
 	escapeRegex = regexp.MustCompile("\\`|\\*|\\_|\\||\\\\")
 
-	handler = harmony.New("r~", true)
+	handler = harmony.New(config.Prefix, true)
 
 	registerUtilityCommands()
 	registerModCommands()
